@@ -2,17 +2,16 @@ export default {
   async fetch(request) {
     try {
       if (request.method === "HEAD") {
-        console.log("new head req");
         return new Response(null, { status: 200 });
       } else if (request.method === "GET" || request.method === "POST") {
-        const [serverIP, ClientIPAndPort] = new URL(request.url).pathname
+        let clientIP = request.headers.get("X-Forwarded-For");
+        if (!clientIP) clientIP = request.headers.get("Cf-Connecting-Ip");
+        const [serverIP, clientPort] = new URL(request.url).pathname
           .replace("/", "")
           .split("/");
 
-        console.log(request.method, serverIP, ClientIPAndPort);
-
         const res = await fetch(
-          `http://${serverIP}.nip.io/${ClientIPAndPort}`,
+          `http://${serverIP}.nip.io/${clientIP}:${clientPort}`,
           { method: request.method }
         );
 
